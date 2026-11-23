@@ -115,8 +115,7 @@ because batch jobs don't read `~/.bashrc`.
 
 ---
 
-## Step 3 - Download the raw reads - 2026-11-18
-
+## Step 3 - Download the raw reads
 Source: Zenodo record 3977236 (URL also saved in the `file name` file).
 
 ```bash
@@ -161,7 +160,7 @@ _Status: run 2026-11-23 - produced `qc/fastqc_raw/female_oral2.fastq-4143_fastqc
 
 ---
 
-## Step 5 - Create a `cutadapt` environment and install Cutadapt into it - 2026-11-23
+## Step 5 - Create a `cutadapt` environment and install Cutadapt into it
 
 Cutadapt removes adapter sequences and low-quality ends from reads. It gets its own
 environment, the same way as FastQC in Step 2:
@@ -198,7 +197,7 @@ _Status: installed. Trimming not yet run (adapter sequence/settings to come from
 
 ---
 
-## Step 6 - Trim adapters and low-quality bases with Cutadapt - 2026-11-23
+## Step 6 - Trim adapters and low-quality bases with Cutadapt
 
 Parameters come from `cutadapt_parameters.txt`:
 
@@ -252,7 +251,7 @@ _Status: run 2026-11-23 - produced `qc/trimmed/female_oral2_trimmed.fastq.gz` an
 
 ---
 
-## Step 7 - Run FastQC on the trimmed reads - 2026-11-23
+## Step 7 - Run FastQC on the trimmed reads
 
 Same as Step 4, but on Cutadapt's output, into a separate folder so the raw and
 trimmed reports can be compared:
@@ -293,7 +292,7 @@ _Status: run 2026-11-23 - produced `qc/fastqc_trimmed/female_oral2_trimmed_fastq
 
 ---
 
-## Step 8 - Install MultiQC and combine all QC results - 2026-11-23
+## Step 8 - Install MultiQC and combine all QC results
 
 _Extra step, not part of the Galaxy tutorial._ MultiQC collects the FastQC and
 Cutadapt outputs into a single HTML report.
