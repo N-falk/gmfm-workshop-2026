@@ -198,4 +198,168 @@ _Status: installed. Trimming not yet run (adapter sequence/settings to come from
 
 ---
 
+## Step 6 â€” Trim adapters and low-quality bases with Cutadapt â€” 2026-11-23
+
+Parameters come from `cutadapt_parameters.txt`:
+
+- `-a CTGTCTCTTATACACATCT` â€” remove the Nextera/Illumina adapter from the 3' end of reads
+- `-q 20` â€” trim bases with quality below 20 from the 3' end
+- `-m 20` â€” throw away reads shorter than 20 bp after trimming
+- `--report minimal` â€” write a one-line, tab-separated summary instead of the long report
+
+The template uses `raw_data/{sample}.fastq.gz`, but our file is named
+`female_oral2.fastq-4143.gz`, so the input file is given directly and `female_oral2`
+is used as the sample name for the outputs:
+
+```bash
+cd $WORKDIR
+mkdir -p qc/trimmed
+conda activate cutadapt
+
+SAMPLE=female_oral2
+cutadapt \
+  -a CTGTCTCTTATACACATCT \
+  -q 20 \
+  -m 20 \
+  -o qc/trimmed/${SAMPLE}_trimmed.fastq.gz \
+  --report minimal \
+  raw_data/female_oral2.fastq-4143.gz \
+  > qc/trimmed/${SAMPLE}_cutadapt_report.txt
+
+conda deactivate
+```
+
+Check that it worked:
+
+```bash
+ls -l qc/trimmed/
+column -t qc/trimmed/female_oral2_cutadapt_report.txt
+```
+
+Result:
+
+| status | in_reads | in_bp | too_short | out_reads | w/adapters | qualtrim_bp | out_bp |
+|---|---|---|---|---|---|---|---|
+| WARN | 812 | 240,352 | 0 | 812 | 461 | 84,277 | 116,483 |
+
+All 812 reads kept; 461 (57%) had adapter removed; about half the bases were trimmed.
+`WARN` is Cutadapt's "adapter may be incomplete at its 5' end" warning (the adapter is
+almost always preceded by `G`). This is common for this Nextera adapter and the trimming
+is still valid. To see the full message, run the same command without
+`--report minimal` (and without the `>` redirect).
+
+_Status: run 2026-11-23 â€” produced `qc/trimmed/female_oral2_trimmed.fastq.gz` and `female_oral2_cutadapt_report.txt`._
+
+---
+
+## Step 7 â€” Run FastQC on the trimmed reads â€” 2026-11-23
+
+Same as Step 4, but on Cutadapt's output, into a separate folder so the raw and
+trimmed reports can be compared:
+
+```bash
+cd $WORKDIR
+mkdir -p qc/fastqc_trimmed
+conda activate fastqc
+fastqc -t 2 --outdir qc/fastqc_trimmed qc/trimmed/*_trimmed.fastq.gz
+conda deactivate
+```
+
+Compare the PASS/WARN/FAIL summary of raw vs trimmed (reads it straight from the zip files):
+
+```bash
+for d in raw trimmed; do
+  echo "== $d"
+  unzip -p qc/fastqc_$d/*.zip '*/summary.txt' | cut -f1,2
+done
+```
+
+Result (raw â†’ trimmed):
+
+| Module | Raw | Trimmed |
+|---|---|---|
+| Per base sequence quality | FAIL | **PASS** |
+| Per sequence quality scores | WARN | **PASS** |
+| Adapter Content | FAIL | **PASS** |
+| Sequence Length Distribution | PASS | WARN (expected â€” reads are now 26â€“296 bp) |
+| Per tile sequence quality | WARN | FAIL |
+| Per base sequence content, Per sequence GC, Duplication, Overrepresented seqs | FAIL | FAIL |
+
+Trimming removed the adapter and the low-quality read ends. The remaining FAILs are
+normal for a small (812-read) amplicon-style/metagenomic test file and are not
+something trimming is meant to fix.
+
+_Status: run 2026-11-23 â€” produced `qc/fastqc_trimmed/female_oral2_trimmed_fastqc.html` and `.zip`._
+
+---
+
+## Step 8 â€” Install MultiQC and combine all QC results â€” 2026-11-23
+
+_Extra step, not part of the Galaxy tutorial._ MultiQC collects the FastQC and
+Cutadapt outputs into a single HTML report.
+
+### 8a â€” Install MultiQC in its own environment
+
+```bash
+mamba create -y -n multiqc -c conda-forge -c bioconda multiqc
+
+cat > ~/conda-envs/multiqc.yml <<'EOF'
+name: multiqc
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - multiqc
+EOF
+```
+
+Check: `conda activate multiqc && multiqc --version` â†’ `multiqc, version 1.35`
+
+### 8b â€” Write a full Cutadapt log for MultiQC
+
+MultiQC can't read the one-line `--report minimal` file from Step 6. Re-run Cutadapt
+with the same parameters but the normal (full) report, sending the reads to
+`/dev/null` so the trimmed file from Step 6 is not overwritten:
+
+```bash
+cd $WORKDIR
+conda activate cutadapt
+cutadapt -a CTGTCTCTTATACACATCT -q 20 -m 20 \
+  -o /dev/null \
+  raw_data/female_oral2.fastq-4143.gz \
+  > qc/trimmed/female_oral2_cutadapt_full.log
+conda deactivate
+```
+
+### 8c â€” Run MultiQC on the whole `qc/` folder
+
+```bash
+cd $WORKDIR
+conda activate multiqc
+mkdir -p qc/multiqc
+multiqc qc/ -d -dd 1 -o qc/multiqc --force
+conda deactivate
+```
+
+- `qc/` â€” folder to search for tool outputs
+- `-d -dd 1` â€” prefix each sample name with its folder (`fastqc_raw | â€¦`, `fastqc_trimmed | â€¦`).
+  **Needed here:** without it MultiQC trims `.fastq-4143` and `_trimmed` off both names,
+  they both become `female_oral2`, and one FastQC report silently replaces the other.
+- `-o qc/multiqc` â€” where to write the report
+- `--force` â€” overwrite an earlier report instead of making `multiqc_report_1.html`
+
+Check: the output should say `cutadapt | Found 1 reports` and `fastqc | Found 2 reports`.
+
+Result (General Statistics table):
+
+| Sample | % adapter-trimmed bp | % GC | Avg length | % duplicates |
+|---|---|---|---|---|
+| fastqc_raw \| female_oral2 | | 44 | 296 | 63.2 |
+| fastqc_trimmed \| female_oral2 | | 54 | 140.7 | 65.9 |
+| trimmed \| female_oral2 (Cutadapt) | 51.5 | | | |
+
+_Status: run 2026-11-23 â€” produced `qc/multiqc/multiqc_report.html` and `qc/multiqc/multiqc_data/`._
+
+---
+
 <!-- Add later steps (new tools, tutorial stages) below in the same format. -->
