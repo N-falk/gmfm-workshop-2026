@@ -161,4 +161,41 @@ _Status: run 2026-11-23 â€” produced `qc/fastqc_raw/female_oral2.fastq-4143
 
 ---
 
+## Step 5 â€” Create a `cutadapt` environment and install Cutadapt into it â€” 2026-11-23
+
+Cutadapt removes adapter sequences and low-quality ends from reads. It gets its own
+environment, the same way as FastQC in Step 2:
+
+```bash
+mamba create -y -n cutadapt -c conda-forge -c bioconda cutadapt
+```
+
+Save the recipe for rebuilding after a purge:
+
+```bash
+cat > ~/conda-envs/cutadapt.yml <<'EOF'
+name: cutadapt
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - cutadapt
+EOF
+
+# To rebuild later:
+# mamba env create -f ~/conda-envs/cutadapt.yml
+```
+
+Check that it worked:
+
+```bash
+conda activate cutadapt
+cutadapt --version   # 5.2
+conda deactivate
+```
+
+_Status: installed. Trimming not yet run (adapter sequence/settings to come from the tutorial)._
+
+---
+
 <!-- Add later steps (new tools, tutorial stages) below in the same format. -->
