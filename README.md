@@ -61,10 +61,10 @@ tool into it:
 mamba create -y -n fastqc -c conda-forge -c bioconda fastqc
 ```
 
-- `create -n fastqc` â€” make a new environment called `fastqc`
-- `-c conda-forge -c bioconda` â€” channels to download packages from (bioconda hosts most bioinformatics tools)
-- `fastqc` (last word) â€” the package to install into the new environment
-- `-y` â€” don't ask for confirmation
+- `create -n fastqc` - make a new environment called `fastqc`
+- `-c conda-forge -c bioconda` - channels to download packages from (bioconda hosts most bioinformatics tools)
+- `fastqc` (last word) - the package to install into the new environment
+- `-y` - don't ask for confirmation
 
 Equivalent two-step version (create an empty environment, then install FastQC into it).
 Use `mamba install` this way to add more tools to an existing environment later:
@@ -115,7 +115,7 @@ because batch jobs don't read `~/.bashrc`.
 
 ---
 
-## Step 3 â€” Download the raw reads â€” 2026-11-18
+## Step 3 - Download the raw reads - 2026-11-18
 
 Source: Zenodo record 3977236 (URL also saved in the `file name` file).
 
@@ -137,7 +137,7 @@ echo $(( $(zcat raw_data/female_oral2.fastq-4143.gz | wc -l) / 4 ))   # 812 read
 
 ---
 
-## Step 4 â€” Run FastQC on the raw reads
+## Step 4 - Run FastQC on the raw reads
 
 Input: `raw_data/female_oral2.fastq-4143.gz`
 
@@ -157,11 +157,11 @@ Notes:
 
 Outputs: `qc/fastqc_raw/*_fastqc.html` (open in a browser) and `*_fastqc.zip`.
 
-_Status: run 2026-11-23 â€” produced `qc/fastqc_raw/female_oral2.fastq-4143_fastqc.html` and `.zip`._
+_Status: run 2026-11-23 - produced `qc/fastqc_raw/female_oral2.fastq-4143_fastqc.html` and `.zip`._
 
 ---
 
-## Step 5 â€” Create a `cutadapt` environment and install Cutadapt into it â€” 2026-11-23
+## Step 5 - Create a `cutadapt` environment and install Cutadapt into it - 2026-11-23
 
 Cutadapt removes adapter sequences and low-quality ends from reads. It gets its own
 environment, the same way as FastQC in Step 2:
@@ -198,14 +198,14 @@ _Status: installed. Trimming not yet run (adapter sequence/settings to come from
 
 ---
 
-## Step 6 â€” Trim adapters and low-quality bases with Cutadapt â€” 2026-11-23
+## Step 6 - Trim adapters and low-quality bases with Cutadapt - 2026-11-23
 
 Parameters come from `cutadapt_parameters.txt`:
 
-- `-a CTGTCTCTTATACACATCT` â€” remove the Nextera/Illumina adapter from the 3' end of reads
-- `-q 20` â€” trim bases with quality below 20 from the 3' end
-- `-m 20` â€” throw away reads shorter than 20 bp after trimming
-- `--report minimal` â€” write a one-line, tab-separated summary instead of the long report
+- `-a CTGTCTCTTATACACATCT` - remove the Nextera/Illumina adapter from the 3' end of reads
+- `-q 20` - trim bases with quality below 20 from the 3' end
+- `-m 20` - throw away reads shorter than 20 bp after trimming
+- `--report minimal` - write a one-line, tab-separated summary instead of the long report
 
 The template uses `raw_data/{sample}.fastq.gz`, but our file is named
 `female_oral2.fastq-4143.gz`, so the input file is given directly and `female_oral2`
@@ -248,11 +248,11 @@ almost always preceded by `G`). This is common for this Nextera adapter and the 
 is still valid. To see the full message, run the same command without
 `--report minimal` (and without the `>` redirect).
 
-_Status: run 2026-11-23 â€” produced `qc/trimmed/female_oral2_trimmed.fastq.gz` and `female_oral2_cutadapt_report.txt`._
+_Status: run 2026-11-23 - produced `qc/trimmed/female_oral2_trimmed.fastq.gz` and `female_oral2_cutadapt_report.txt`._
 
 ---
 
-## Step 7 â€” Run FastQC on the trimmed reads â€” 2026-11-23
+## Step 7 - Run FastQC on the trimmed reads - 2026-11-23
 
 Same as Step 4, but on Cutadapt's output, into a separate folder so the raw and
 trimmed reports can be compared:
@@ -281,7 +281,7 @@ Result (raw â†’ trimmed):
 | Per base sequence quality | FAIL | **PASS** |
 | Per sequence quality scores | WARN | **PASS** |
 | Adapter Content | FAIL | **PASS** |
-| Sequence Length Distribution | PASS | WARN (expected â€” reads are now 26â€“296 bp) |
+| Sequence Length Distribution | PASS | WARN (expected - reads are now 26â€“296 bp) |
 | Per tile sequence quality | WARN | FAIL |
 | Per base sequence content, Per sequence GC, Duplication, Overrepresented seqs | FAIL | FAIL |
 
@@ -289,16 +289,16 @@ Trimming removed the adapter and the low-quality read ends. The remaining FAILs 
 normal for a small (812-read) amplicon-style/metagenomic test file and are not
 something trimming is meant to fix.
 
-_Status: run 2026-11-23 â€” produced `qc/fastqc_trimmed/female_oral2_trimmed_fastqc.html` and `.zip`._
+_Status: run 2026-11-23 - produced `qc/fastqc_trimmed/female_oral2_trimmed_fastqc.html` and `.zip`._
 
 ---
 
-## Step 8 â€” Install MultiQC and combine all QC results â€” 2026-11-23
+## Step 8 - Install MultiQC and combine all QC results - 2026-11-23
 
 _Extra step, not part of the Galaxy tutorial._ MultiQC collects the FastQC and
 Cutadapt outputs into a single HTML report.
 
-### 8a â€” Install MultiQC in its own environment
+### 8a - Install MultiQC in its own environment
 
 ```bash
 mamba create -y -n multiqc -c conda-forge -c bioconda multiqc
@@ -315,7 +315,7 @@ EOF
 
 Check: `conda activate multiqc && multiqc --version` â†’ `multiqc, version 1.35`
 
-### 8b â€” Write a full Cutadapt log for MultiQC
+### 8b - Write a full Cutadapt log for MultiQC
 
 MultiQC can't read the one-line `--report minimal` file from Step 6. Re-run Cutadapt
 with the same parameters but the normal (full) report, sending the reads to
@@ -331,7 +331,7 @@ cutadapt -a CTGTCTCTTATACACATCT -q 20 -m 20 \
 conda deactivate
 ```
 
-### 8c â€” Run MultiQC on the whole `qc/` folder
+### 8c - Run MultiQC on the whole `qc/` folder
 
 ```bash
 cd $WORKDIR
@@ -341,12 +341,12 @@ multiqc qc/ -d -dd 1 -o qc/multiqc --force
 conda deactivate
 ```
 
-- `qc/` â€” folder to search for tool outputs
-- `-d -dd 1` â€” prefix each sample name with its folder (`fastqc_raw | â€¦`, `fastqc_trimmed | â€¦`).
+- `qc/` - folder to search for tool outputs
+- `-d -dd 1` - prefix each sample name with its folder (`fastqc_raw | â€¦`, `fastqc_trimmed | â€¦`).
   **Needed here:** without it MultiQC trims `.fastq-4143` and `_trimmed` off both names,
   they both become `female_oral2`, and one FastQC report silently replaces the other.
-- `-o qc/multiqc` â€” where to write the report
-- `--force` â€” overwrite an earlier report instead of making `multiqc_report_1.html`
+- `-o qc/multiqc` - where to write the report
+- `--force` - overwrite an earlier report instead of making `multiqc_report_1.html`
 
 Check: the output should say `cutadapt | Found 1 reports` and `fastqc | Found 2 reports`.
 
@@ -358,13 +358,13 @@ Result (General Statistics table):
 | fastqc_trimmed \| female_oral2 | | 54 | 140.7 | 65.9 |
 | trimmed \| female_oral2 (Cutadapt) | 51.5 | | | |
 
-_Status: run 2026-11-23 â€” produced `qc/multiqc/multiqc_report.html` and `qc/multiqc/multiqc_data/`._
+_Status: run 2026-11-23 - produced `qc/multiqc/multiqc_report.html` and `qc/multiqc/multiqc_data/`._
 
 ---
 
-## Step 9 â€” Install Kraken2 for taxonomic classification â€” 2026-11-23
+## Step 9 - Install Kraken2 for taxonomic classification - 2026-11-23
 
-### 9a â€” Install Kraken2 in its own environment
+### 9a - Install Kraken2 in its own environment
 
 ```bash
 mamba create -y -n kraken2 -c conda-forge -c bioconda kraken2
@@ -381,7 +381,7 @@ EOF
 
 Check: `conda activate kraken2 && kraken2 --version` â†’ `Kraken version 2.17.2`
 
-### 9b â€” Download the reads for taxonomy (2026-11-23)
+### 9b - Download the reads for taxonomy (2026-11-23)
 
 Four files from Zenodo record 7871630 (URLs also in the `file name` file, under
 "kraken taxonomy"). They are **paired-end**: two samples, `JC1A` and `JP4D`, each with an
@@ -416,7 +416,7 @@ md5sum raw_data/J*.fastqsanger.gz
 | JP4D_R1.fastqsanger.gz | 175M | 1,116,049 | cad03d2dbdcc721c82362eb8fa812d17 |
 | JP4D_R2.fastqsanger.gz | 191M | 1,116,049 | ed76606b2a30c4221f1a3c5265c7a2b8 |
 
-### 9c â€” Databases
+### 9c - Databases
 
 Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
 
@@ -429,7 +429,7 @@ Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
 Kraken2 loads the whole database into memory, so either database needs a
 `highmem` Slurm job (nodes have ~1 TB RAM), not the login node.
 
-### 9d â€” Classify both samples with Kraken2 as a Slurm job (NOT RUN)
+### 9d - Classify both samples with Kraken2 as a Slurm job (NOT RUN)
 
 Database: **PlusPFP** (`/scratch/references/kraken2/pluspfp_20230605`), the smaller of
 the two (158 GB vs 516 GB for nt). Kraken2 loads the whole database into memory, so the
@@ -519,9 +519,9 @@ When it has finished (`COMPLETED`, exit code `0:0`), `taxonomy/` contains, per s
 
 What the options do:
 
-- `--paired` â€” treat the R1 and R2 files as two ends of the same fragments (each pair gets one classification)
-- `--threads "$SLURM_CPUS_PER_TASK"` â€” use exactly the 24 CPUs the job asked for
-- `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
+- `--paired` - treat the R1 and R2 files as two ends of the same fragments (each pair gets one classification)
+- `--threads "$SLURM_CPUS_PER_TASK"` - use exactly the 24 CPUs the job asked for
+- `--gzip-compressed` - input is `.gz` (newer versions detect this automatically; harmless to include)
 - To run other samples, change the `SAMPLES="..."` line; files must be named
   `raw_data/<sample>_R1.fastqsanger.gz` and `..._R2.fastqsanger.gz`.
 
@@ -534,10 +534,10 @@ Notes:
 - The script was checked with `bash -n` and `sbatch --test-only` (Slurm accepts the
   request) but has not been run.
 
-- `--paired` â€” treat the two files as R1/R2 of the same fragments (each pair gets one classification)
-- `--report` â€” summary table: % and number of reads assigned to each taxon
-- `--output` â€” one line per read pair with the taxon it was assigned to
-- `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
+- `--paired` - treat the two files as R1/R2 of the same fragments (each pair gets one classification)
+- `--report` - summary table: % and number of reads assigned to each taxon
+- `--output` - one line per read pair with the taxon it was assigned to
+- `--gzip-compressed` - input is `.gz` (newer versions detect this automatically; harmless to include)
 
 _Status: run 2026-11-23 as job 53622360 (COMPLETED, exit 0:0, 6 min). Produced
 `taxonomy/JC1A_kraken2_report.txt` and `taxonomy/JP4D_kraken2_report.txt`
@@ -547,7 +547,7 @@ afterwards moved to `taxonomy/output files/`. Peak memory was 180.0 GB, right at
 
 ---
 
-## Step 10 â€” Build a taxon-by-sample (OTU) table from the Kraken2 reports â€” 2026-11-23
+## Step 10 - Build a taxon-by-sample (OTU) table from the Kraken2 reports - 2026-11-23
 
 Script: `kraken_taxa_tools/kraken2otu2.py` (own script). It reads every Kraken2 report in
 a folder and writes `otu_table_<rank>.csv` into that same folder: one row per taxon, one
@@ -574,9 +574,9 @@ python3 kraken_taxa_tools/kraken2otu2.py \
   -e _kraken2_report.txt
 ```
 
-- `-i` â€” folder containing the reports (the table is also written here)
-- `-l` â€” rank: `genus`/`G`, `species`/`S`, `family`/`F`, `order`/`O`, `class`/`C`, `phylum`/`P`, `superkingdom`/`D`
-- `-e _kraken2_report.txt` â€” only read the report files (not `_output.txt`), and use
+- `-i` - folder containing the reports (the table is also written here)
+- `-l` - rank: `genus`/`G`, `species`/`S`, `family`/`F`, `order`/`O`, `class`/`C`, `phylum`/`P`, `superkingdom`/`D`
+- `-e _kraken2_report.txt` - only read the report files (not `_output.txt`), and use
   what's left of the file name as the sample name (`JC1A`, `JP4D`)
 
 The script only uses the Python standard library, so any `python3` works (the
@@ -600,7 +600,7 @@ Rhodobacter,342,2669
 
 All 2,198 genera were cross-checked against the reports: 0 mismatches.
 
-_Status: run 2026-11-23 â€” produced `taxonomy/otu_table_genus.csv`._
+_Status: run 2026-11-23 - produced `taxonomy/otu_table_genus.csv`._
 
 ---
 
