@@ -1,7 +1,7 @@
 # gmfm-workshop-2026
 Command Line Instructions for the Workshop
 
-# GMFM Workshop 2026 â€” Command Log
+# GMFM Workshop 2026 - Command Log
 
 Commands to reproduce the setup by hand on Pawsey Setonix.
 Run them from a login node unless a step says otherwise. Each step lists what it
@@ -15,12 +15,12 @@ export CONDA_ROOT=/scratch/pawsey1018/$USER/miniforge3
 ```
 
 > `/scratch` is purged after 21 days without access. If conda or an environment
-> stops working, repeat Steps 1â€“2. Environment recipes are kept in `~/conda-envs/`
+> stops working, repeat Steps 1-2. Environment recipes are kept in `~/conda-envs/`
 > (in `$HOME`, which is not purged).
 
 ---
 
-## Step 1 â€” Install Miniforge (conda + mamba) â€” 2026-11-23
+## Step 1 - Install Miniforge (conda + mamba) -
 
 ```bash
 cd /scratch/pawsey1018/$USER
@@ -52,7 +52,7 @@ mamba --version    # 2.9.0
 
 ---
 
-## Step 2 â€” Create a `fastqc` environment and install FastQC into it â€” 2026-11-23
+## Step 2 - Create a `fastqc` environment and install FastQC into it
 
 One command creates a new environment named `fastqc` **and** installs the FastQC
 tool into it:
@@ -539,7 +539,68 @@ Notes:
 - `--output` â€” one line per read pair with the taxon it was assigned to
 - `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
 
-_Status: Kraken2 installed and reads downloaded. Classification not run yet._
+_Status: run 2026-11-23 as job 53622360 (COMPLETED, exit 0:0, 6 min). Produced
+`taxonomy/JC1A_kraken2_report.txt` and `taxonomy/JP4D_kraken2_report.txt`
+(classified: JC1A 56.6%, JP4D 30.5%). The per-read `*_kraken2_output.txt` files were
+afterwards moved to `taxonomy/output files/`. Peak memory was 180.0 GB, right at the
+180G limit. For future runs consider `--mem=200G` with `--cpus-per-task=26`._
+
+---
+
+## Step 10 â€” Build a taxon-by-sample (OTU) table from the Kraken2 reports â€” 2026-11-23
+
+Script: `kraken_taxa_tools/kraken2otu2.py` (own script). It reads every Kraken2 report in
+a folder and writes `otu_table_<rank>.csv` into that same folder: one row per taxon, one
+column per sample. Values are column 2 of the report (reads assigned to that taxon
+*and everything below it*), so the genus table counts reads from all species in each genus.
+
+Fixes made to the script on 2026-11-23:
+
+- **Rank matching (bug that made the table empty):** Kraken2 reports write ranks as codes
+  (`G`, `S`, `F`, plus sub-ranks like `G1`, `S1`), but the script looked them up by full
+  name (`genus`). The file's codes are now converted with the same `RANK_ALIASES`
+  table, and codes it doesn't know (`U`, `R`, `G1`, `S2`, ...) are skipped.
+- **Column order:** report files are now `sorted()`, so samples always appear in the same order.
+- Line 1 (a stray Markdown fence) was commented out by hand to stop a `SyntaxError`.
+
+Before running: the per-read `*_kraken2_output.txt` files were moved into
+`taxonomy/output files/`, so only the reports are in `taxonomy/`.
+
+```bash
+cd $WORKDIR
+python3 kraken_taxa_tools/kraken2otu2.py \
+  -i taxonomy \
+  -l genus \
+  -e _kraken2_report.txt
+```
+
+- `-i` â€” folder containing the reports (the table is also written here)
+- `-l` â€” rank: `genus`/`G`, `species`/`S`, `family`/`F`, `order`/`O`, `class`/`C`, `phylum`/`P`, `superkingdom`/`D`
+- `-e _kraken2_report.txt` â€” only read the report files (not `_output.txt`), and use
+  what's left of the file name as the sample name (`JC1A`, `JP4D`)
+
+The script only uses the Python standard library, so any `python3` works (the
+conda base environment's Python 3.14 was used).
+
+Check that it worked:
+
+```bash
+wc -l taxonomy/otu_table_genus.csv        # 2199 = header + 2198 genera
+head -4 taxonomy/otu_table_genus.csv
+```
+
+Result (`taxonomy/otu_table_genus.csv`, first rows):
+
+```
+otu,JC1A,JP4D
+Paracoccus,1521,18096
+Cereibacter,391,3608
+Rhodobacter,342,2669
+```
+
+All 2,198 genera were cross-checked against the reports: 0 mismatches.
+
+_Status: run 2026-11-23 â€” produced `taxonomy/otu_table_genus.csv`._
 
 ---
 
