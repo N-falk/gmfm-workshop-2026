@@ -429,23 +429,61 @@ Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
 Kraken2 loads the whole database into memory, so either database needs a
 `highmem` Slurm job (nodes have ~1 TB RAM), not the login node.
 
-### 9d â€” Classify each sample with Kraken2 (NOT RUN)
+### 9d â€” Classify both samples with Kraken2 as a Slurm job (NOT RUN)
 
-Paired-end command, one sample at a time. `KRAKEN_DB` is a placeholder; the smaller
-Setonix database is PlusPFP. Because the database is loaded into memory, run this as a
-`highmem` Slurm job (see `SLURM_EXAMPLES.md` section 6), not on the login node.
+Database: **PlusPFP** (`/scratch/references/kraken2/pluspfp_20230605`), the smaller of
+the two (158 GB vs 516 GB for nt). Kraken2 loads the whole database into memory, so the
+job goes to the `highmem` partition with 180 GB. `highmem` allows at most ~7.9 GB per
+CPU, so 180 GB needs 24 CPUs.
+
+Both samples run inside **one** job, so the 158 GB database is only read once.
+
+**1. Create the folders** (Slurm won't create the `logs/` folder itself, and the job
+fails with no log if it's missing):
 
 ```bash
 cd $WORKDIR
-mkdir -p taxonomy
+mkdir -p slurm logs
+```
+
+**2. Save the script as `slurm/kraken2.slurm`.** Either paste the script part into a
+new file with an editor (`nano slurm/kraken2.slurm`), or copy this whole block into the
+terminal, which writes the file for you:
+
+```bash
+cat > slurm/kraken2.slurm <<'EOF'
+#!/bin/bash
+#SBATCH --job-name=kraken2
+#SBATCH --account=pawsey1018
+#SBATCH --partition=highmem
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=180G
+#SBATCH --time=02:00:00
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+
+# Kraken2 taxonomic classification of the paired-end taxonomy reads (SETUP_LOG Step 9).
+# Submit from the workshop directory:  sbatch slurm/kraken2.slurm
+
+set -eo pipefail
+
+KRAKEN_DB=/scratch/references/kraken2/pluspfp_20230605
+SAMPLES="JC1A JP4D"
+
+# Batch jobs don't read ~/.bashrc, so load conda here
+source /scratch/pawsey1018/$USER/miniforge3/etc/profile.d/conda.sh
 conda activate kraken2
 
-KRAKEN_DB=/path/to/kraken2_database     # e.g. /scratch/references/kraken2/pluspfp_20230605
+cd "$SLURM_SUBMIT_DIR"
+mkdir -p taxonomy
 
-for SAMPLE in JC1A JP4D; do
+for SAMPLE in $SAMPLES; do
+  echo "$(date '+%F %T')  Classifying $SAMPLE"
   kraken2 \
     --db "$KRAKEN_DB" \
-    --threads 8 \
+    --threads "$SLURM_CPUS_PER_TASK" \
     --paired \
     --gzip-compressed \
     --report taxonomy/${SAMPLE}_kraken2_report.txt \
@@ -454,8 +492,47 @@ for SAMPLE in JC1A JP4D; do
     raw_data/${SAMPLE}_R2.fastqsanger.gz
 done
 
-conda deactivate
+echo "$(date '+%F %T')  Done"
+EOF
 ```
+
+**3. Submit it** from the workshop directory:
+
+```bash
+cd $WORKDIR
+sbatch slurm/kraken2.slurm
+```
+
+**4. Check on it:**
+
+```bash
+squeue -u $USER                                   # PD = waiting, R = running
+sacct -u $USER -S today --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS
+cat logs/kraken2_<jobid>.out                      # progress messages
+cat logs/kraken2_<jobid>.err                      # Kraken2's per-sample summary (% classified)
+```
+
+When it has finished (`COMPLETED`, exit code `0:0`), `taxonomy/` contains, per sample:
+
+- `<sample>_kraken2_report.txt`: summary table, % and number of reads assigned to each taxon
+- `<sample>_kraken2_output.txt`: one line per read pair with the taxon it was assigned to
+
+What the options do:
+
+- `--paired` â€” treat the R1 and R2 files as two ends of the same fragments (each pair gets one classification)
+- `--threads "$SLURM_CPUS_PER_TASK"` â€” use exactly the 24 CPUs the job asked for
+- `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
+- To run other samples, change the `SAMPLES="..."` line; files must be named
+  `raw_data/<sample>_R1.fastqsanger.gz` and `..._R2.fastqsanger.gz`.
+
+Notes:
+
+- Expect a queue wait. `highmem` has only 16 nodes and pawsey1018 is over its
+  allocation (low priority). On 2026-11-23 Slurm estimated a start about a day away.
+- Most of the run time is loading the database. Classifying the reads themselves takes
+  minutes at most.
+- The script was checked with `bash -n` and `sbatch --test-only` (Slurm accepts the
+  request) but has not been run.
 
 - `--paired` â€” treat the two files as R1/R2 of the same fragments (each pair gets one classification)
 - `--report` â€” summary table: % and number of reads assigned to each taxon
@@ -467,4 +544,3 @@ _Status: Kraken2 installed and reads downloaded. Classification not run yet._
 ---
 
 <!-- Add later steps (new tools, tutorial stages) below in the same format. -->
-
