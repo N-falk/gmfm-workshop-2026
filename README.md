@@ -362,4 +362,109 @@ _Status: run 2026-11-23 â€” produced `qc/multiqc/multiqc_report.html` and `
 
 ---
 
+## Step 9 â€” Install Kraken2 for taxonomic classification â€” 2026-11-23
+
+### 9a â€” Install Kraken2 in its own environment
+
+```bash
+mamba create -y -n kraken2 -c conda-forge -c bioconda kraken2
+
+cat > ~/conda-envs/kraken2.yml <<'EOF'
+name: kraken2
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - kraken2
+EOF
+```
+
+Check: `conda activate kraken2 && kraken2 --version` â†’ `Kraken version 2.17.2`
+
+### 9b â€” Download the reads for taxonomy (2026-11-23)
+
+Four files from Zenodo record 7871630 (URLs also in the `file name` file, under
+"kraken taxonomy"). They are **paired-end**: two samples, `JC1A` and `JP4D`, each with an
+R1 (forward) and R2 (reverse) file.
+
+```bash
+cd $WORKDIR/raw_data
+for s in JC1A JP4D; do
+  for r in R1 R2; do
+    wget https://zenodo.org/record/7871630/files/${s}_${r}.fastqsanger.gz
+  done
+done
+cd $WORKDIR
+```
+
+`.fastqsanger.gz` is Galaxy's name for an ordinary gzipped FASTQ (Sanger/Phred+33
+qualities), so tools treat it like `.fastq.gz`.
+
+Check that it worked: R1 and R2 of each sample must have the same number of reads.
+
+```bash
+for f in raw_data/J*.fastqsanger.gz; do
+  gzip -t "$f" && echo "$f  reads=$(( $(zcat "$f" | wc -l) / 4 ))"
+done
+md5sum raw_data/J*.fastqsanger.gz
+```
+
+| File | Size | Reads | md5 |
+|---|---|---|---|
+| JC1A_R1.fastqsanger.gz | 21M | 137,139 | d81ab0af18820753e1d57eb3cd793485 |
+| JC1A_R2.fastqsanger.gz | 20M | 137,139 | 8d0606ff0f73044eb9786a18c4272d99 |
+| JP4D_R1.fastqsanger.gz | 175M | 1,116,049 | cad03d2dbdcc721c82362eb8fa812d17 |
+| JP4D_R2.fastqsanger.gz | 191M | 1,116,049 | ed76606b2a30c4221f1a3c5265c7a2b8 |
+
+### 9c â€” Databases
+
+Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
+
+| Path | Contents | Size |
+|---|---|---|
+| `/scratch/references/kraken2/pluspfp_20230605/` | PlusPFP: Standard (bacteria, archaea, viruses, human) + protozoa, fungi, plants | 158 GB |
+| `/scratch/references/kraken2/nt_20230502/` | All of NCBI nt | 516 GB |
+
+`--db` takes the **folder** (containing `hash.k2d`, `opts.k2d`, `taxo.k2d`), not a file.
+Kraken2 loads the whole database into memory, so either database needs a
+`highmem` Slurm job (nodes have ~1 TB RAM), not the login node.
+
+### 9d â€” Classify each sample with Kraken2 (NOT RUN)
+
+Paired-end command, one sample at a time. `KRAKEN_DB` is a placeholder; the smaller
+Setonix database is PlusPFP. Because the database is loaded into memory, run this as a
+`highmem` Slurm job (see `SLURM_EXAMPLES.md` section 6), not on the login node.
+
+```bash
+cd $WORKDIR
+mkdir -p taxonomy
+conda activate kraken2
+
+KRAKEN_DB=/path/to/kraken2_database     # e.g. /scratch/references/kraken2/pluspfp_20230605
+
+for SAMPLE in JC1A JP4D; do
+  kraken2 \
+    --db "$KRAKEN_DB" \
+    --threads 8 \
+    --paired \
+    --gzip-compressed \
+    --report taxonomy/${SAMPLE}_kraken2_report.txt \
+    --output taxonomy/${SAMPLE}_kraken2_output.txt \
+    raw_data/${SAMPLE}_R1.fastqsanger.gz \
+    raw_data/${SAMPLE}_R2.fastqsanger.gz
+done
+
+conda deactivate
+```
+
+- `--paired` â€” treat the two files as R1/R2 of the same fragments (each pair gets one classification)
+- `--report` â€” summary table: % and number of reads assigned to each taxon
+- `--output` â€” one line per read pair with the taxon it was assigned to
+- `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
+
+_Status: Kraken2 installed and reads downloaded. Classification not run yet._
+
+---
+
 <!-- Add later steps (new tools, tutorial stages) below in the same format. -->
+
