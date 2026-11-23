@@ -429,7 +429,7 @@ Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
 Kraken2 loads the whole database into memory, so either database needs a
 `highmem` Slurm job (nodes have ~1 TB RAM), not the login node.
 
-### 9d - Classify both samples with Kraken2 as a Slurm job (NOT RUN)
+### 9d - Classify both samples with Kraken2 as a Slurm job
 
 Database: **PlusPFP** (`/scratch/references/kraken2/pluspfp_20230605`), the smaller of
 the two (158 GB vs 516 GB for nt). Kraken2 loads the whole database into memory, so the
@@ -547,7 +547,7 @@ afterwards moved to `taxonomy/output files/`. Peak memory was 180.0 GB, right at
 
 ---
 
-## Step 10 - Build a taxon-by-sample (OTU) table from the Kraken2 reports - 2026-11-23
+## Step 10 - Build a taxon-by-sample (OTU) table from the Kraken2 reports
 
 Script: `kraken_taxa_tools/kraken2otu2.py` (own script). It reads every Kraken2 report in
 a folder and writes `otu_table_<rank>.csv` into that same folder: one row per taxon, one
