@@ -814,8 +814,8 @@ conda deactivate
 
 - `-t 4` - threads
 - `-o` - output folder
-- QUAST's default `--min-contig 500`: most statistics only count contigs â‰¥ 500 bp (rows
-  marked `>= 0 bp` include all contigs). MEGAHIT kept contigs â‰¥ 200 bp, so QUAST's N50
+- QUAST's default `--min-contig 500`: most statistics only count contigs (≥) 500 bp (rows
+  marked `>= 0 bp` include all contigs). MEGAHIT kept contigs (≥) 200 bp, so QUAST's N50
   (907) is higher than MEGAHIT's own (506).
 
 Check that it worked:
@@ -826,15 +826,15 @@ cat assembly_qc/quast_ERR2231567/report.txt
 
 Outputs: `report.txt`/`.tsv`/`.html`/`.pdf` (summary table) and `icarus.html` (contig viewer).
 
-Result (contigs â‰¥ 500 bp unless noted):
+Result (contigs (≥) 500 bp unless noted):
 
 | Metric | Value |
 |---|---|
-| # contigs (all, â‰¥ 0 bp) | 220,147 |
-| # contigs (â‰¥ 500 bp) | 58,252 |
-| # contigs â‰¥ 1 kb / â‰¥ 5 kb / â‰¥ 10 kb / â‰¥ 25 kb | 12,123 / 676 / 135 / 3 |
+| # contigs (all, (≥) 0 bp) | 220,147 |
+| # contigs ((≥) 500 bp) | 58,252 |
+| # contigs (≥) 1 kb / (≥) 5 kb / (≥) 10 kb / (≥) 25 kb | 12,123 / 676 / 135 / 3 |
 | Total length (all) | 109.8 Mbp |
-| Total length (â‰¥ 500 bp) | 55.7 Mbp |
+| Total length ((≥) 500 bp) | 55.7 Mbp |
 | Largest contig | 28,907 bp |
 | N50 / N90 | 907 / 547 bp |
 | L50 | 14,820 contigs |
@@ -1027,7 +1027,7 @@ Result:
 |---|---|---|---|
 | bin.1.fa | 44 | 223,330 bp | 4.85Ã— |
 
-Of the 63 contigs, 50 are â‰¥ 2,500 bp; MetaBAT 2 placed 44 of them (90.5% of the
+Of the 63 contigs, 50 are (≥) 2,500 bp; MetaBAT 2 placed 44 of them (90.5% of the
 long-contig bases) in a single bin. Only one bin is expected: the tutorial data only
 totals ~266 kb, so at most one bin can pass the 200 kb minimum bin size. For comparison,
 the Zenodo record also contains the tutorial's own MetaBAT output (`metabat_0.fasta`,
@@ -1121,8 +1121,8 @@ Result (`binning/checkm2/quality_report.tsv`):
 
 The bin is clean (no contamination) but holds only ~14% of a genome. That's expected:
 it's only 223 kb, and a bacterial genome is typically 2â€“6 Mb. The tutorial data is a small
-subset. By the usual MIMAG standard this is a **low-quality** bin (high quality is â‰¥ 90%
-complete and < 5% contaminated; medium is â‰¥ 50% and < 10%).
+subset. By the usual MIMAG standard this is a **low-quality** bin (high quality is (≥) 90%
+complete and < 5% contaminated; medium is (≥) 50% and < 10%).
 
 _Status: run 2026-11-24 - produced `binning/checkm2/quality_report.tsv`._
 
