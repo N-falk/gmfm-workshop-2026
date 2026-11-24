@@ -1,7 +1,7 @@
 # gmfm-workshop-2026
 Command Line Instructions for the Workshop
 
-# GMFM Workshop 2026 â€” Command Log
+# GMFM Workshop 2026 - Command Log
 
 Commands to reproduce the setup by hand on Pawsey Setonix.
 Run them from a login node unless a step says otherwise. Each step lists what it
@@ -20,7 +20,7 @@ export CONDA_ROOT=/scratch/pawsey1018/$USER/miniforge3
 
 ---
 
-## Step 1 â€” Install Miniforge (conda + mamba) â€” 2026-11-23
+## Step 1 - Install Miniforge (conda + mamba) - 2026-11-23
 
 ```bash
 cd /scratch/pawsey1018/$USER
@@ -52,7 +52,7 @@ mamba --version    # 2.9.0
 
 ---
 
-## Step 2 â€” Create a `fastqc` environment and install FastQC into it â€” 2026-11-23
+## Step 2 - Create a `fastqc` environment and install FastQC into it - 2026-11-23
 
 One command creates a new environment named `fastqc` **and** installs the FastQC
 tool into it:
@@ -61,10 +61,10 @@ tool into it:
 mamba create -y -n fastqc -c conda-forge -c bioconda fastqc
 ```
 
-- `create -n fastqc` â€” make a new environment called `fastqc`
-- `-c conda-forge -c bioconda` â€” channels to download packages from (bioconda hosts most bioinformatics tools)
-- `fastqc` (last word) â€” the package to install into the new environment
-- `-y` â€” don't ask for confirmation
+- `create -n fastqc` - make a new environment called `fastqc`
+- `-c conda-forge -c bioconda` - channels to download packages from (bioconda hosts most bioinformatics tools)
+- `fastqc` (last word) - the package to install into the new environment
+- `-y` - don't ask for confirmation
 
 Equivalent two-step version (create an empty environment, then install FastQC into it).
 Use `mamba install` this way to add more tools to an existing environment later:
@@ -115,7 +115,7 @@ because batch jobs don't read `~/.bashrc`.
 
 ---
 
-## Step 3 â€” Download the raw reads â€” 2026-11-18
+## Step 3 - Download the raw reads - 2026-11-18
 
 Source: Zenodo record 3977236 (URL also saved in the `file name` file).
 
@@ -137,7 +137,7 @@ echo $(( $(zcat raw_data/female_oral2.fastq-4143.gz | wc -l) / 4 ))   # 812 read
 
 ---
 
-## Step 4 â€” Run FastQC on the raw reads
+## Step 4 - Run FastQC on the raw reads
 
 Input: `raw_data/female_oral2.fastq-4143.gz`
 
@@ -157,11 +157,11 @@ Notes:
 
 Outputs: `qc/fastqc_raw/*_fastqc.html` (open in a browser) and `*_fastqc.zip`.
 
-_Status: run 2026-11-23 â€” produced `qc/fastqc_raw/female_oral2.fastq-4143_fastqc.html` and `.zip`._
+_Status: run 2026-11-23 - produced `qc/fastqc_raw/female_oral2.fastq-4143_fastqc.html` and `.zip`._
 
 ---
 
-## Step 5 â€” Create a `cutadapt` environment and install Cutadapt into it â€” 2026-11-23
+## Step 5 - Create a `cutadapt` environment and install Cutadapt into it - 2026-11-23
 
 Cutadapt removes adapter sequences and low-quality ends from reads. It gets its own
 environment, the same way as FastQC in Step 2:
@@ -198,14 +198,14 @@ _Status: installed. Trimming not yet run (adapter sequence/settings to come from
 
 ---
 
-## Step 6 â€” Trim adapters and low-quality bases with Cutadapt â€” 2026-11-23
+## Step 6 - Trim adapters and low-quality bases with Cutadapt - 2026-11-23
 
 Parameters come from `cutadapt_parameters.txt`:
 
-- `-a CTGTCTCTTATACACATCT` â€” remove the Nextera/Illumina adapter from the 3' end of reads
-- `-q 20` â€” trim bases with quality below 20 from the 3' end
-- `-m 20` â€” throw away reads shorter than 20 bp after trimming
-- `--report minimal` â€” write a one-line, tab-separated summary instead of the long report
+- `-a CTGTCTCTTATACACATCT` - remove the Nextera/Illumina adapter from the 3' end of reads
+- `-q 20` - trim bases with quality below 20 from the 3' end
+- `-m 20` - throw away reads shorter than 20 bp after trimming
+- `--report minimal` - write a one-line, tab-separated summary instead of the long report
 
 The template uses `raw_data/{sample}.fastq.gz`, but our file is named
 `female_oral2.fastq-4143.gz`, so the input file is given directly and `female_oral2`
@@ -248,11 +248,11 @@ almost always preceded by `G`). This is common for this Nextera adapter and the 
 is still valid. To see the full message, run the same command without
 `--report minimal` (and without the `>` redirect).
 
-_Status: run 2026-11-23 â€” produced `qc/trimmed/female_oral2_trimmed.fastq.gz` and `female_oral2_cutadapt_report.txt`._
+_Status: run 2026-11-23 - produced `qc/trimmed/female_oral2_trimmed.fastq.gz` and `female_oral2_cutadapt_report.txt`._
 
 ---
 
-## Step 7 â€” Run FastQC on the trimmed reads â€” 2026-11-23
+## Step 7 - Run FastQC on the trimmed reads - 2026-11-23
 
 Same as Step 4, but on Cutadapt's output, into a separate folder so the raw and
 trimmed reports can be compared:
@@ -281,7 +281,7 @@ Result (raw â†’ trimmed):
 | Per base sequence quality | FAIL | **PASS** |
 | Per sequence quality scores | WARN | **PASS** |
 | Adapter Content | FAIL | **PASS** |
-| Sequence Length Distribution | PASS | WARN (expected â€” reads are now 26â€“296 bp) |
+| Sequence Length Distribution | PASS | WARN (expected - reads are now 26â€“296 bp) |
 | Per tile sequence quality | WARN | FAIL |
 | Per base sequence content, Per sequence GC, Duplication, Overrepresented seqs | FAIL | FAIL |
 
@@ -289,16 +289,16 @@ Trimming removed the adapter and the low-quality read ends. The remaining FAILs 
 normal for a small (812-read) amplicon-style/metagenomic test file and are not
 something trimming is meant to fix.
 
-_Status: run 2026-11-23 â€” produced `qc/fastqc_trimmed/female_oral2_trimmed_fastqc.html` and `.zip`._
+_Status: run 2026-11-23 - produced `qc/fastqc_trimmed/female_oral2_trimmed_fastqc.html` and `.zip`._
 
 ---
 
-## Step 8 â€” Install MultiQC and combine all QC results â€” 2026-11-23
+## Step 8 - Install MultiQC and combine all QC results - 2026-11-23
 
 _Extra step, not part of the Galaxy tutorial._ MultiQC collects the FastQC and
 Cutadapt outputs into a single HTML report.
 
-### 8a â€” Install MultiQC in its own environment
+### 8a - Install MultiQC in its own environment
 
 ```bash
 mamba create -y -n multiqc -c conda-forge -c bioconda multiqc
@@ -315,7 +315,7 @@ EOF
 
 Check: `conda activate multiqc && multiqc --version` â†’ `multiqc, version 1.35`
 
-### 8b â€” Write a full Cutadapt log for MultiQC
+### 8b - Write a full Cutadapt log for MultiQC
 
 MultiQC can't read the one-line `--report minimal` file from Step 6. Re-run Cutadapt
 with the same parameters but the normal (full) report, sending the reads to
@@ -331,7 +331,7 @@ cutadapt -a CTGTCTCTTATACACATCT -q 20 -m 20 \
 conda deactivate
 ```
 
-### 8c â€” Run MultiQC on the whole `qc/` folder
+### 8c - Run MultiQC on the whole `qc/` folder
 
 ```bash
 cd $WORKDIR
@@ -341,12 +341,12 @@ multiqc qc/ -d -dd 1 -o qc/multiqc --force
 conda deactivate
 ```
 
-- `qc/` â€” folder to search for tool outputs
-- `-d -dd 1` â€” prefix each sample name with its folder (`fastqc_raw | â€¦`, `fastqc_trimmed | â€¦`).
+- `qc/` - folder to search for tool outputs
+- `-d -dd 1` - prefix each sample name with its folder (`fastqc_raw | â€¦`, `fastqc_trimmed | â€¦`).
   **Needed here:** without it MultiQC trims `.fastq-4143` and `_trimmed` off both names,
   they both become `female_oral2`, and one FastQC report silently replaces the other.
-- `-o qc/multiqc` â€” where to write the report
-- `--force` â€” overwrite an earlier report instead of making `multiqc_report_1.html`
+- `-o qc/multiqc` - where to write the report
+- `--force` - overwrite an earlier report instead of making `multiqc_report_1.html`
 
 Check: the output should say `cutadapt | Found 1 reports` and `fastqc | Found 2 reports`.
 
@@ -358,13 +358,13 @@ Result (General Statistics table):
 | fastqc_trimmed \| female_oral2 | | 54 | 140.7 | 65.9 |
 | trimmed \| female_oral2 (Cutadapt) | 51.5 | | | |
 
-_Status: run 2026-11-23 â€” produced `qc/multiqc/multiqc_report.html` and `qc/multiqc/multiqc_data/`._
+_Status: run 2026-11-23 - produced `qc/multiqc/multiqc_report.html` and `qc/multiqc/multiqc_data/`._
 
 ---
 
-## Step 9 â€” Install Kraken2 for taxonomic classification â€” 2026-11-23
+## Step 9 - Install Kraken2 for taxonomic classification - 2026-11-23
 
-### 9a â€” Install Kraken2 in its own environment
+### 9a - Install Kraken2 in its own environment
 
 ```bash
 mamba create -y -n kraken2 -c conda-forge -c bioconda kraken2
@@ -381,7 +381,7 @@ EOF
 
 Check: `conda activate kraken2 && kraken2 --version` â†’ `Kraken version 2.17.2`
 
-### 9b â€” Download the reads for taxonomy (2026-11-23)
+### 9b - Download the reads for taxonomy (2026-11-23)
 
 Four files from Zenodo record 7871630 (URLs also in the `file name` file, under
 "kraken taxonomy"). They are **paired-end**: two samples, `JC1A` and `JP4D`, each with an
@@ -416,7 +416,7 @@ md5sum raw_data/J*.fastqsanger.gz
 | JP4D_R1.fastqsanger.gz | 175M | 1,116,049 | cad03d2dbdcc721c82362eb8fa812d17 |
 | JP4D_R2.fastqsanger.gz | 191M | 1,116,049 | ed76606b2a30c4221f1a3c5265c7a2b8 |
 
-### 9c â€” Databases
+### 9c - Databases
 
 Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
 
@@ -429,7 +429,7 @@ Pre-built Kraken2 databases are kept centrally on Setonix (no download needed):
 Kraken2 loads the whole database into memory, so either database needs a
 `highmem` Slurm job (nodes have ~1 TB RAM), not the login node.
 
-### 9d â€” Classify both samples with Kraken2 as a Slurm job
+### 9d - Classify both samples with Kraken2 as a Slurm job
 
 Database: **PlusPFP** (`/scratch/references/kraken2/pluspfp_20230605`), the smaller of
 the two (158 GB vs 516 GB for nt). Kraken2 loads the whole database into memory, so the
@@ -519,9 +519,9 @@ When it has finished (`COMPLETED`, exit code `0:0`), `taxonomy/` contains, per s
 
 What the options do:
 
-- `--paired` â€” treat the R1 and R2 files as two ends of the same fragments (each pair gets one classification)
-- `--threads "$SLURM_CPUS_PER_TASK"` â€” use exactly the 24 CPUs the job asked for
-- `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
+- `--paired` - treat the R1 and R2 files as two ends of the same fragments (each pair gets one classification)
+- `--threads "$SLURM_CPUS_PER_TASK"` - use exactly the 24 CPUs the job asked for
+- `--gzip-compressed` - input is `.gz` (newer versions detect this automatically; harmless to include)
 - To run other samples, change the `SAMPLES="..."` line; files must be named
   `raw_data/<sample>_R1.fastqsanger.gz` and `..._R2.fastqsanger.gz`.
 
@@ -534,10 +534,10 @@ Notes:
 - The script was checked with `bash -n` and `sbatch --test-only` (Slurm accepts the
   request) but has not been run.
 
-- `--paired` â€” treat the two files as R1/R2 of the same fragments (each pair gets one classification)
-- `--report` â€” summary table: % and number of reads assigned to each taxon
-- `--output` â€” one line per read pair with the taxon it was assigned to
-- `--gzip-compressed` â€” input is `.gz` (newer versions detect this automatically; harmless to include)
+- `--paired` - treat the two files as R1/R2 of the same fragments (each pair gets one classification)
+- `--report` - summary table: % and number of reads assigned to each taxon
+- `--output` - one line per read pair with the taxon it was assigned to
+- `--gzip-compressed` - input is `.gz` (newer versions detect this automatically; harmless to include)
 
 _Status: run 2026-11-23 as job 53622360 (COMPLETED, exit 0:0, 6 min). Produced
 `taxonomy/JC1A_kraken2_report.txt` and `taxonomy/JP4D_kraken2_report.txt`
@@ -547,7 +547,7 @@ afterwards moved to `taxonomy/output files/`. Peak memory was 180.0 GB, right at
 
 ---
 
-## Step 10 â€” Build a taxon-by-sample (OTU) table from the Kraken2 reports â€” 2026-11-23
+## Step 10 - Build a taxon-by-sample (OTU) table from the Kraken2 reports - 2026-11-23
 
 Script: `kraken_taxa_tools/kraken2otu2.py` (own script). It reads every Kraken2 report in
 a folder and writes `otu_table_<rank>.csv` into that same folder: one row per taxon, one
@@ -574,9 +574,9 @@ python3 kraken_taxa_tools/kraken2otu2.py \
   -e _kraken2_report.txt
 ```
 
-- `-i` â€” folder containing the reports (the table is also written here)
-- `-l` â€” rank: `genus`/`G`, `species`/`S`, `family`/`F`, `order`/`O`, `class`/`C`, `phylum`/`P`, `superkingdom`/`D`
-- `-e _kraken2_report.txt` â€” only read the report files (not `_output.txt`), and use
+- `-i` - folder containing the reports (the table is also written here)
+- `-l` - rank: `genus`/`G`, `species`/`S`, `family`/`F`, `order`/`O`, `class`/`C`, `phylum`/`P`, `superkingdom`/`D`
+- `-e _kraken2_report.txt` - only read the report files (not `_output.txt`), and use
   what's left of the file name as the sample name (`JC1A`, `JP4D`)
 
 The script only uses the Python standard library, so any `python3` works (the
@@ -600,13 +600,13 @@ Rhodobacter,342,2669
 
 All 2,198 genera were cross-checked against the reports: 0 mismatches.
 
-_Status: run 2026-11-23 â€” produced `taxonomy/otu_table_genus.csv`._
+_Status: run 2026-11-23 - produced `taxonomy/otu_table_genus.csv`._
 
 ---
 
-## Step 11 â€” Assemble reads into contigs with MEGAHIT â€” 2026-11-24
+## Step 11 - Assemble reads into contigs with MEGAHIT - 2026-11-24
 
-### 11a â€” Install MEGAHIT in its own environment
+### 11a - Install MEGAHIT in its own environment
 
 ```bash
 mamba create -y -n megahit -c conda-forge -c bioconda megahit
@@ -623,7 +623,7 @@ EOF
 
 Check: `conda activate megahit && megahit --version` â†’ `MEGAHIT v1.2.9`
 
-### 11b â€” Download the reads for assembly
+### 11b - Download the reads for assembly
 
 Zenodo record 7818827 (URLs in the `file name` file, under "MEGAHIT"). The tutorial lists
 6 paired-end samples (ERR2231567 to ERR2231572). **Only ERR2231567 is used here**: Zenodo
@@ -660,7 +660,7 @@ md5sum raw_data/ERR2231567_*.fastqsanger.gz
 
 Reads are ~287 bp on average.
 
-### 11c â€” Assemble with MEGAHIT as a Slurm job
+### 11c - Assemble with MEGAHIT as a Slurm job
 
 Tutorial settings ("MEGAHIT INSTRUCTIONS" in `file name`):
 
@@ -748,12 +748,12 @@ tail logs/megahit_<jobid>_1.err      # MEGAHIT's progress and final contig summa
 
 What the options do:
 
-- `-1` / `-2` â€” forward and reverse reads of the pair
-- `--num-cpu-threads` â€” use the 16 CPUs the job asked for
-- `--memory` â€” a number above 1 is bytes; set to 90% of the 28 GB job so MEGAHIT stays
+- `-1` / `-2` - forward and reverse reads of the pair
+- `--num-cpu-threads` - use the 16 CPUs the job asked for
+- `--memory` - a number above 1 is bytes; set to 90% of the 28 GB job so MEGAHIT stays
   inside it (MEGAHIT's default is 90% of the *whole node*, which would exceed the job's share)
-- `--out-dir` / `--out-prefix` â€” results go to `assembly/<sample>/<sample>.contigs.fa`
-- `--force` â€” overwrite an earlier run's output folder instead of stopping with an error
+- `--out-dir` / `--out-prefix` - results go to `assembly/<sample>/<sample>.contigs.fa`
+- `--force` - overwrite an earlier run's output folder instead of stopping with an error
 - Contigs shorter than 200 bp are dropped (MEGAHIT's default `--min-contig-len 200`)
 
 Result for ERR2231567 (`assembly/ERR2231567/ERR2231567.contigs.fa`, 114 MB):
@@ -773,9 +773,9 @@ downloaded yet: Zenodo throttled the download to ~180 bytes/s._
 
 ---
 
-## Step 12 â€” Assembly quality control with QUAST â€” 2026-11-24
+## Step 12 - Assembly quality control with QUAST - 2026-11-24
 
-### 12a â€” Install QUAST in its own environment
+### 12a - Install QUAST in its own environment
 
 A plain `mamba create -n quast ... quast` does **not** give a working install: the solver
 either picks the old QUAST 4.6.3 (crashes with `DistributionNotFound`) or QUAST 5.2 with
@@ -797,7 +797,7 @@ EOF
 
 Check: `conda activate quast && quast.py --version` â†’ `QUAST v5.3.0`
 
-### 12b â€” Run QUAST on the MEGAHIT contigs
+### 12b - Run QUAST on the MEGAHIT contigs
 
 No reference genome (it's a metagenome), so QUAST reports size/contiguity statistics.
 It only takes ~25 s, so the login node is fine.
@@ -812,8 +812,8 @@ quast.py \
 conda deactivate
 ```
 
-- `-t 4` â€” threads
-- `-o` â€” output folder
+- `-t 4` - threads
+- `-o` - output folder
 - QUAST's default `--min-contig 500`: most statistics only count contigs â‰¥ 500 bp (rows
   marked `>= 0 bp` include all contigs). MEGAHIT kept contigs â‰¥ 200 bp, so QUAST's N50
   (907) is higher than MEGAHIT's own (506).
@@ -844,17 +844,17 @@ Result (contigs â‰¥ 500 bp unless noted):
 N50 = half of the assembled bases are in contigs at least this long; L50 = how many
 contigs that takes.
 
-_Status: run 2026-11-24 â€” produced `assembly_qc/quast_ERR2231567/` (no warnings or errors)._
+_Status: run 2026-11-24 - produced `assembly_qc/quast_ERR2231567/` (no warnings or errors)._
 
 ---
 
-## Step 13 â€” Binning, part 1: map reads back to the contigs (Bowtie2 + SAMtools) â€” 2026-11-24
+## Step 13 - Binning, part 1: map reads back to the contigs (Bowtie2 + SAMtools) - 2026-11-24
 
 MetaBAT 2 groups contigs into bins using how deeply each contig is covered by reads, so
 the reads first have to be mapped to the contigs. This step makes the sorted BAM file it
 needs. All of it runs in seconds on these small tutorial files, so the login node is fine.
 
-### 13a â€” Install Bowtie2 and SAMtools (one environment each)
+### 13a - Install Bowtie2 and SAMtools (one environment each)
 
 ```bash
 mamba create -y -n bowtie2  -c conda-forge -c bioconda bowtie2
@@ -867,7 +867,7 @@ done
 
 Check: `bowtie2 --version` â†’ 2.5.5 (in env `bowtie2`); `samtools --version` â†’ 1.25 (in env `samtools`)
 
-### 13b â€” Download the binning input files
+### 13b - Download the binning input files
 
 Zenodo record 17661262 (Galaxy tutorial "Binning of metagenomic sequencing data"; URLs in
 `file name` under "BINNING"). These are small, pre-made tutorial files: the contigs and
@@ -901,7 +901,7 @@ md5sum binning/input/*
 | reads_forward.fastqsanger.gz | 1.3 MB | 9,462 reads | 0f5988c910dda3bcb049d25785ac2d79 |
 | reads_reverse.fastqsanger.gz | 1.3 MB | 9,462 reads | 8f265f43b1c853a981a71b03a5548bb0 |
 
-### 13c â€” Index the contigs, map the reads, sort the alignments
+### 13c - Index the contigs, map the reads, sort the alignments
 
 Commands from `file name`, with the tutorial's placeholder file names (`contigs.fasta`,
 `reads_R1.fastq.gz`, `reads_R2.fastq.gz`) replaced by the real ones. Run inside `binning/`:
@@ -929,12 +929,12 @@ samtools sort -o output_sorted.bam output.sam
 conda deactivate
 ```
 
-- `-x contigs_index` â€” the index built in step 1
-- `-1` / `-2` â€” forward and reverse reads
-- `-S output.sam` â€” write alignments as SAM (plain text)
-- `--no-unal` â€” leave reads that didn't map out of the SAM file
-- `2> mapping_stats.txt` â€” Bowtie2 prints its alignment summary on stderr; save it
-- `samtools sort -o ...` â€” sort by contig position and write compressed BAM
+- `-x contigs_index` - the index built in step 1
+- `-1` / `-2` - forward and reverse reads
+- `-S output.sam` - write alignments as SAM (plain text)
+- `--no-unal` - leave reads that didn't map out of the SAM file
+- `2> mapping_stats.txt` - Bowtie2 prints its alignment summary on stderr; save it
+- `samtools sort -o ...` - sort by contig position and write compressed BAM
 
 **Fix to the tutorial instructions:** they say `samtools sort -o output_sorted.bam output.bam`,
 but Bowtie2 wrote `output.sam`, and no `output.bam` exists. `samtools sort` reads SAM
@@ -959,11 +959,11 @@ _Status: run 2026-11-24. MetaBAT 2 run in Step 14._
 
 ---
 
-## Step 14 â€” Binning, part 2: group contigs into bins with MetaBAT 2 â€” 2026-11-24
+## Step 14 - Binning, part 2: group contigs into bins with MetaBAT 2 - 2026-11-24
 
 Uses the contigs and the sorted BAM from Step 13. Default MetaBAT 2 settings.
 
-### 14a â€” Install MetaBAT 2 in its own environment
+### 14a - Install MetaBAT 2 in its own environment
 
 ```bash
 mamba create -y -n metabat2 -c conda-forge -c bioconda metabat2
@@ -981,7 +981,7 @@ EOF
 Check: `conda activate metabat2 && metabat2 --help | head -2` â†’ version 2:2.18. The
 environment also contains `jgi_summarize_bam_contig_depths`, used below.
 
-### 14b â€” Calculate per-contig coverage, then bin
+### 14b - Calculate per-contig coverage, then bin
 
 ```bash
 cd $WORKDIR/binning
@@ -1001,11 +1001,11 @@ metabat2 \
 conda deactivate
 ```
 
-- `--outputDepth depth.txt` â€” table of contig name, length and average depth
-- `-i` â€” the contigs to bin
-- `-a depth.txt` â€” the depth table from step 1
-- `-o metabat2_bins/bin` â€” prefix for output: bins are written as `metabat2_bins/bin.1.fa`, `bin.2.fa`, ...
-- `-t 4` â€” threads. **Use this on the login node.** Without it MetaBAT 2 uses every
+- `--outputDepth depth.txt` - table of contig name, length and average depth
+- `-i` - the contigs to bin
+- `-a depth.txt` - the depth table from step 1
+- `-o metabat2_bins/bin` - prefix for output: bins are written as `metabat2_bins/bin.1.fa`, `bin.2.fa`, ...
+- `-t 4` - threads. **Use this on the login node.** Without it MetaBAT 2 uses every
   CPU it can see (the 2026-11-24 run used 247 threads without `-t`). It made no
   difference here because the run took under a second, but on larger data it would
   overload the shared login node.
@@ -1036,17 +1036,17 @@ one bin).
 Outputs in `binning/`: `depth.txt`, `metabat2_bins/bin.1.fa`, `bin.BinInfo.txt` (bin
 summary), `bin.BinMembers.txt` (which contigs are in which bin).
 
-_Status: run 2026-11-24 â€” 1 bin produced._
+_Status: run 2026-11-24 - 1 bin produced._
 
 ---
 
-## Step 15 â€” Check bin quality with CheckM2 â€” 2026-11-24
+## Step 15 - Check bin quality with CheckM2 - 2026-11-24
 
 CheckM2 estimates how **complete** a bin is (how much of a full genome it contains) and how
 **contaminated** it is (how much comes from other organisms), using machine-learning
 models and a protein database.
 
-### 15a â€” Install CheckM2 in its own environment
+### 15a - Install CheckM2 in its own environment
 
 Pin scikit-learn to 1.6.1. CheckM2 1.1.0's models were saved with that version. With the
 newer scikit-learn that conda installs by default (1.9.1), CheckM2 prints
@@ -1077,7 +1077,7 @@ python -c 'import sklearn; print(sklearn.__version__)'  # 1.6.1
 (On 2026-11-24 the environment was first made without the pin, then fixed with
 `mamba install -n checkm2 'scikit-learn=1.6.1'`. Results were identical either way.)
 
-### 15b â€” Database
+### 15b - Database
 
 CheckM2 needs its DIAMOND database (`uniref100.KO.1.dmnd`, 3.1 GB). **Don't download it**
 (`checkm2 database --download` fetches it from Zenodo, which was throttling). Setonix
@@ -1087,7 +1087,7 @@ has a central copy, from the VEBA database set (v9, Aug 2025):
 /scratch/references/VEBA-DB_v9/Classify/CheckM2/uniref100.KO.1.dmnd
 ```
 
-### 15c â€” Run CheckM2 on the MetaBAT 2 bin
+### 15c - Run CheckM2 on the MetaBAT 2 bin
 
 ```bash
 cd $WORKDIR/binning
@@ -1101,10 +1101,10 @@ checkm2 predict \
 conda deactivate
 ```
 
-- `--input metabat2_bins` with `--extension .fa` â€” check every `.fa` file in that folder (here just `bin.1.fa`)
-- `--output-directory` â€” results folder (CheckM2 creates it)
-- `--database_path` â€” the central database above
-- `--threads 4` â€” keeps the shared login node usable; took ~1 min for one bin. For many
+- `--input metabat2_bins` with `--extension .fa` - check every `.fa` file in that folder (here just `bin.1.fa`)
+- `--output-directory` - results folder (CheckM2 creates it)
+- `--database_path` - the central database above
+- `--threads 4` - keeps the shared login node usable; took ~1 min for one bin. For many
   bins, run it as a Slurm job.
 
 Check that it worked: the last log line is `CheckM2 finished successfully.`, then:
@@ -1124,7 +1124,7 @@ it's only 223 kb, and a bacterial genome is typically 2â€“6 Mb. The tutoria
 subset. By the usual MIMAG standard this is a **low-quality** bin (high quality is â‰¥ 90%
 complete and < 5% contaminated; medium is â‰¥ 50% and < 10%).
 
-_Status: run 2026-11-24 â€” produced `binning/checkm2/quality_report.tsv`._
+_Status: run 2026-11-24 - produced `binning/checkm2/quality_report.tsv`._
 
 ---
 
