@@ -274,7 +274,7 @@ for d in raw trimmed; do
 done
 ```
 
-Result (raw â†’ trimmed):
+Result (raw → trimmed):
 
 | Module | Raw | Trimmed |
 |---|---|---|
@@ -313,7 +313,7 @@ dependencies:
 EOF
 ```
 
-Check: `conda activate multiqc && multiqc --version` â†’ `multiqc, version 1.35`
+Check: `conda activate multiqc && multiqc --version` → `multiqc, version 1.35`
 
 ### 8b - Write a full Cutadapt log for MultiQC
 
@@ -379,7 +379,7 @@ dependencies:
 EOF
 ```
 
-Check: `conda activate kraken2 && kraken2 --version` â†’ `Kraken version 2.17.2`
+Check: `conda activate kraken2 && kraken2 --version` → `Kraken version 2.17.2`
 
 ### 9b - Download the reads for taxonomy (2026-11-23)
 
@@ -621,7 +621,7 @@ dependencies:
 EOF
 ```
 
-Check: `conda activate megahit && megahit --version` â†’ `MEGAHIT v1.2.9`
+Check: `conda activate megahit && megahit --version` → `MEGAHIT v1.2.9`
 
 ### 11b - Download the reads for assembly
 
@@ -665,7 +665,7 @@ Reads are ~287 bp on average.
 Tutorial settings ("MEGAHIT INSTRUCTIONS" in `file name`):
 
 - **Individual assembly**: each sample is assembled on its own (not pooled)
-- **k-mer sizes**: min 21, max 91, step 12 â†’ `--k-min 21 --k-max 91 --k-step 12`.
+- **k-mer sizes**: min 21, max 91, step 12 → `--k-min 21 --k-max 91 --k-step 12`.
   MEGAHIT turns this into k = 21, 33, 45, 57, 69, 81, **91** (stepping by 12 stops at
   81, and MEGAHIT adds the max as the last step). Confirmed in a test run.
 
@@ -795,7 +795,7 @@ dependencies:
 EOF
 ```
 
-Check: `conda activate quast && quast.py --version` â†’ `QUAST v5.3.0`
+Check: `conda activate quast && quast.py --version` → `QUAST v5.3.0`
 
 ### 12b - Run QUAST on the MEGAHIT contigs
 
@@ -865,7 +865,7 @@ for t in bowtie2 samtools; do
 done
 ```
 
-Check: `bowtie2 --version` â†’ 2.5.5 (in env `bowtie2`); `samtools --version` â†’ 1.25 (in env `samtools`)
+Check: `bowtie2 --version` → 2.5.5 (in env `bowtie2`); `samtools --version` → 1.25 (in env `samtools`)
 
 ### 13b - Download the binning input files
 
@@ -938,7 +938,7 @@ conda deactivate
 
 **Fix to the tutorial instructions:** they say `samtools sort -o output_sorted.bam output.bam`,
 but Bowtie2 wrote `output.sam`, and no `output.bam` exists. `samtools sort` reads SAM
-directly, so the input is `output.sam` (no separate SAMâ†’BAM conversion is needed).
+directly, so the input is `output.sam` (no separate SAM→BAM conversion is needed).
 
 Check that it worked:
 
@@ -978,7 +978,7 @@ dependencies:
 EOF
 ```
 
-Check: `conda activate metabat2 && metabat2 --help | head -2` â†’ version 2:2.18. The
+Check: `conda activate metabat2 && metabat2 --help | head -2` → version 2:2.18. The
 environment also contains `jgi_summarize_bam_contig_depths`, used below.
 
 ### 14b - Calculate per-contig coverage, then bin
